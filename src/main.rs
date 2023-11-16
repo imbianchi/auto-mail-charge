@@ -87,7 +87,8 @@ fn send_email(usd_converted: f64) -> Result<(), Box<dyn std::error::Error>> {
                                     <b>Favor efetuar pagamento no PIX: <pix     number here>
                                     </b>
                                     <br/>
-                                    Atenciosamente,
+                                    Atenciosamente, \n\n
+                                    <signature here>
                                 </div>
                                 ",
                         )))
