@@ -12,3 +12,4 @@ headless_chrome = "1.0.7"
 futures = "0.3.29"
 lettre = "0.11.0"
 dotenv = "0.15.0"
+chrono = { version = "0.4.31", features = ["unstable-locales"] }
