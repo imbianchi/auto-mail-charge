@@ -58,16 +58,15 @@ fn send_email(usd_rate: f64) -> Result<(), Box<dyn std::error::Error>> {
     let charge_value = charge_value.parse::<f64>().unwrap();
 
     let now = Local::now();
-    let dt = Utc::with_ymd_and_hms(&chrono::Utc,now.year(), now.month(), now.day(), 0, 0, 0).unwrap();
 
-    let current_month = dt.format_localized("%B", Locale::pt_BR);
+    let current_month = now.format("%m").to_string();
     let current_year = now.format("%Y").to_string();
 
     let to_addresses: Mailboxes = to_addresses.parse().unwrap();
     let to_header: header::To = to_addresses.into();
 
     let subject = std::env::var("EMAIL_SUBJECT").unwrap();
-    let subject = format!("{}- {}, {}", &subject, &current_month, &current_year);
+    let subject = format!("{}- {}/{}", &subject, &current_month, &current_year);
 
     let total_value = &charge_value * &usd_rate;
     let total_value = (total_value * 100.0).round() / 100.0;
@@ -81,7 +80,7 @@ fn send_email(usd_rate: f64) -> Result<(), Box<dyn std::error::Error>> {
                 Valor a ser depositado referente ao mes de <b>{current_month} de {current_year}</b>.<br/>
                 Servidor & Hospedagem: <b>${charge_value} x R${usd_rate} = R${total_value}</b>.<br/>
                 <p>
-                    <img style='width: 450px; height: 400px;' src=cid:monthly-charge />
+                    <img style='width: 450px; height: 360px;' src=cid:monthly-charge />
                 </p>
                 <b>Favor efetuar pagamento no PIX: {pix_number}
                 </b>
