@@ -1,6 +1,5 @@
 use dotenv::dotenv;
 
-use lettre::message::header::ContentType;
 use lettre::message::{header, Attachment, Body, Mailboxes, MultiPart, SinglePart};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
@@ -51,13 +50,12 @@ fn get_screenshot_usd_brl() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn send_email(usd_converted: f64) -> Result<(), Box<dyn std::error::Error>> {
-    let body = "Hello, this is a test email from Rust!";
-
     let sender = std::env::var("EMAIL_SENDER").unwrap();
     let pswd = std::env::var("EMAIL_PSWD").unwrap();
     let smtp = std::env::var("SMTP").unwrap();
-
+    let pix_number = std::env::var("PIX_NUMBER").unwrap();
     let to_addresses = std::env::var("EMAIL_RECIPIENTS").unwrap();
+
     let to_addresses: Mailboxes = to_addresses.parse().unwrap();
     let to_header: header::To = to_addresses.into();
 
@@ -71,25 +69,34 @@ fn send_email(usd_converted: f64) -> Result<(), Box<dyn std::error::Error>> {
         .from(sender.parse().unwrap())
         .subject(subject)
         .multipart(
-            MultiPart::mixed()
-                .multipart(
-                    MultiPart::alternative()
-                        .singlepart(SinglePart::plain(String::from("Hello, world! :)")))
-                        .multipart(
-                            MultiPart::related()
-                                .singlepart(SinglePart::html(String::from(
-                                    "<p><b>Hello</b>, <i>world</i>! <img src=cid:123></p>",
-                                )))
-                                .singlepart(
-                                    Attachment::new_inline(String::from("123"))
-                                        .body(image_body, "image/png".parse().unwrap()),
-                                ),
+            MultiPart::mixed().multipart(
+                MultiPart::alternative().multipart(
+                    MultiPart::related()
+                        .singlepart(SinglePart::html(String::from(
+                            "
+                                <div>
+                                    Bom dia a todos, \n
+                                    Valor a ser depositado referente ao mes de <month-year here>.
+                                    <br/>
+                                    Servidor & Hospedagem: \n
+                                    $30 x R$5.04 = R$151.20.
+                                    <br/>
+                                    <p>
+                                        <img src=cid:monthly-charge />
+                                    </p>
+                                    <b>Favor efetuar pagamento no PIX: <pix     number here>
+                                    </b>
+                                    <br/>
+                                    Atenciosamente,
+                                </div>
+                                ",
+                        )))
+                        .singlepart(
+                            Attachment::new_inline(String::from("monthly-charge"))
+                                .body(image_body, "image/png".parse().unwrap()),
                         ),
-                )
-                .singlepart(Attachment::new(String::from("example.rs")).body(
-                    String::from("fn main() { println!(\"Hello, World!\") }"),
-                    "text/plain".parse().unwrap(),
-                )),
+                ),
+            ),
         )?;
 
     let creds = Credentials::new(sender.to_owned(), pswd.to_owned());
