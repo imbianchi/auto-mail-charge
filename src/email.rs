@@ -17,8 +17,13 @@ pub fn send_email(usd_rate: f64) -> Result<(), Box<dyn std::error::Error>> {
     let last_month_u32 = now.month() - 1;
     let current_year_str = now.format("%Y").to_string();
 
-    let dt = Utc.with_ymd_and_hms(now.year(), last_month_u32, now.day(), 0, 0, 0).unwrap();
-    let last_month_str = dt.format_localized("%B", Locale::pt_BR).to_string().to_uppercase();
+    let dt = Utc
+        .with_ymd_and_hms(now.year(), last_month_u32, now.day(), 0, 0, 0)
+        .unwrap();
+    let last_month_str = dt
+        .format_localized("%B", Locale::pt_BR)
+        .to_string()
+        .to_uppercase();
 
     let to_addresses: Mailboxes = vars.get_var("EMAIL_RECIPIENTS").parse().unwrap();
     let to_header: header::To = to_addresses.into();
@@ -45,7 +50,7 @@ pub fn send_email(usd_rate: f64) -> Result<(), Box<dyn std::error::Error>> {
                 Valor a ser depositado referente ao mês de <b>{last_month_str} de {current_year_str}</b>.<br/>
                 Servidor & Hospedagem: <b>${charge_value} x R${usd_rate} = R${total_value}</b>.<br/>
                 <p>
-                    <img style='width: 450px; height: 340px;' src=cid:monthly-charge />
+                    <img name='dolar-hoje' alt='usd_brl' style='width: 450px; height: 340px;' src=cid:monthly-charge />
                 </p>
                 <b>Favor efetuar pagamento no PIX: {pix_number}
                 </b>
@@ -68,14 +73,12 @@ pub fn send_email(usd_rate: f64) -> Result<(), Box<dyn std::error::Error>> {
         .subject(subject)
         .multipart(
             MultiPart::mixed().multipart(
-                MultiPart::alternative().multipart(
-                    MultiPart::related()
-                        .singlepart(SinglePart::html(String::from(body)))
-                        .singlepart(
-                            Attachment::new_inline(String::from("monthly-charge"))
-                                .body(image_body, "image/png".parse().unwrap()),
-                        ),
-                ),
+                MultiPart::related()
+                    .singlepart(SinglePart::html(String::from(body)))
+                    .singlepart(
+                        Attachment::new_inline(String::from("monthly-charge"))
+                            .body(image_body, "image/png".parse().unwrap()),
+                    ),
             ),
         )?;
 
@@ -90,7 +93,7 @@ pub fn send_email(usd_rate: f64) -> Result<(), Box<dyn std::error::Error>> {
         .build();
 
     match mailer.send(&email) {
-        Ok(_) => {},
+        Ok(_) => println!("Email sent!"),
         Err(e) => println!("Error sending email: {:?}", e),
     }
 
